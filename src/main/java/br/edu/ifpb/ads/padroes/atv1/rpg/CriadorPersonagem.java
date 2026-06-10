@@ -1,136 +1,195 @@
 package br.edu.ifpb.ads.padroes.atv1.rpg;
 
+import br.edu.ifpb.ads.padroes.atv1.rpg.abstractfactory.FabricaEquipamentos;
+import br.edu.ifpb.ads.padroes.atv1.rpg.factory.FabricaEquipamentosFactory;
+import br.edu.ifpb.ads.padroes.atv1.rpg.model.Personagem;
+import br.edu.ifpb.ads.padroes.atv1.rpg.prototype.RegistroPrototipos;
+import br.edu.ifpb.ads.padroes.atv1.rpg.singleton.ConfiguracaoJogo;
+
+/**
+ * Fachada principal do sistema de criação de personagens.
+ *
+ * Orquestra os padrões:
+ *   - Factory Method  → seleciona a fábrica correta via FabricaEquipamentosFactory
+ *   - Abstract Factory → FabricaEquipamentos cria arma/armadura/habilidades coesas
+ *   - Builder         → Personagem.Builder monta o objeto passo a passo
+ *   - Singleton       → consulta ConfiguracaoJogo para regras globais
+ *   - Prototype       → clona protótipos registrados quando disponíveis
+ */
 public class CriadorPersonagem {
 
-    public static Personagem criarPersonagem(String nome, String raca, String classe) {
+    private final RegistroPrototipos registro;
 
-        int forca = 0, inteligencia = 0, agilidade = 0, vida = 0, mana = 0;
-        Arma arma = null;
-        Armadura armadura = null;
-        String[] habilidades = null;
-
-        if (raca.equals("Humano")) {
-            if (classe.equals("Guerreiro")) {
-                forca = 15;
-                inteligencia = 8;
-                agilidade = 10;
-                vida = 120;
-                mana = 30;
-
-                arma = new Arma("Espada de Ferro", 25, "Espada");
-                armadura = new Armadura("Armadura de Placas", 20, "Pesada");
-                habilidades = new String[]{"Investida", "Bloqueio"};
-
-            } else if (classe.equals("Mago")) {
-                forca = 6;
-                inteligencia = 18;
-                agilidade = 8;
-                vida = 80;
-                mana = 150;
-                arma = new Arma("Cajado Mágico", 15, "Cajado");
-                armadura = new Armadura("Vestes Mágicas", 8, "Leve");
-                habilidades = new String[]{"Bola de Fogo", "Cura"};
-
-            } else if (classe.equals("Arqueiro")) {
-                forca = 10;
-                inteligencia = 12;
-                agilidade = 16;
-                vida = 100;
-                mana = 70;
-                arma = new Arma("Arco Élfico", 20, "Arco");
-                armadura = new Armadura("Armadura de Couro", 12, "Média");
-                habilidades = new String[]{"Tiro Certeiro", "Chuva de Flechas"};
-            }
-
-        } else if (raca.equals("Elfo")) {
-            if (classe.equals("Guerreiro")) {
-                forca = 12;
-                inteligencia = 14;
-                agilidade = 16;
-                vida = 100;
-                mana = 60;
-                arma = new Arma("Lâmina Élfica", 22, "Espada");
-                armadura = new Armadura("Cota de Malha Élfica", 15, "Média");
-                habilidades = new String[]{"Dança das Lâminas", "Agilidade Élfica"};
-
-            } else if (classe.equals("Mago")) {
-                forca = 4;
-                inteligencia = 20;
-                agilidade = 14;
-                vida = 70;
-                mana = 180;
-                arma = new Arma("Cajado da Natureza", 18, "Cajado");
-                armadura = new Armadura("Mantos Élficos", 10, "Leve");
-                habilidades = new String[]{"Magia da Natureza", "Teleporte"};
-
-            } else if (classe.equals("Arqueiro")) {
-                forca = 8;
-                inteligencia = 16;
-                agilidade = 20;
-                vida = 90;
-                mana = 100;
-                arma = new Arma("Arco Longo Élfico", 28, "Arco");
-                armadura = new Armadura("Armadura de Couro Élfico", 14, "Média");
-                habilidades = new String[]{"Tiro Múltiplo", "Camuflagem"};
-            }
-
-        } else if (raca.equals("Orc")) {
-            if (classe.equals("Guerreiro")) {
-                forca = 20;
-                inteligencia = 6;
-                agilidade = 8;
-                vida = 150;
-                mana = 20;
-                arma = new Arma("Machado de Guerra", 30, "Machado");
-                armadura = new Armadura("Armadura Brutal", 25, "Pesada");
-                habilidades = new String[]{"Fúria", "Pancada Devastadora"};
-
-            } else if (classe.equals("Mago")) {
-                // PROBLEMA: Combinação estranha, mas o código permite
-                forca = 10;
-                inteligencia = 14;
-                agilidade = 6;
-                vida = 100;
-                mana = 120;
-                arma = new Arma("Cajado Tribal", 12, "Cajado");
-                armadura = new Armadura("Vestes Xamânicas", 6, "Leve");
-                habilidades = new String[]{"Magia Sombria", "Invocação"};
-
-            } else if (classe.equals("Arqueiro")) {
-                forca = 14;
-                inteligencia = 8;
-                agilidade = 12;
-                vida = 120;
-                mana = 40;
-                arma = new Arma("Arco de Osso", 24, "Arco");
-                armadura = new Armadura("Couro de Besta", 16, "Média");
-                habilidades = new String[]{"Tiro Brutal", "Intimidação"};
-            }
-        }
-
-        // Retorna null se combinação inválida
-        if (arma == null) {
-            System.out.println("Combinação inválida: " + raca + " " + classe);
-            return null;
-        }
-
-        return new Personagem(nome, raca, classe, forca, inteligencia, agilidade,
-                vida, mana, arma, armadura, habilidades);
+    public CriadorPersonagem() {
+        this.registro = new RegistroPrototipos();
     }
 
-    public static Personagem criarPersonagemEspecial(String nome, String raca, String classe) {
-        Personagem base = criarPersonagem(nome, raca, classe);
-        if (base == null) return null;
-
-        if (raca.equals("Humano") && classe.equals("Guerreiro")) {
-            return new Personagem(nome + " o Lendário", raca, classe,
-                    18, 10, 12, 140, 40,
-                    new Arma("Excalibur", 35, "Espada"),
-                    new Armadura("Armadura do Rei", 30, "Pesada"),
-                    new String[]{"Investida", "Bloqueio", "Liderança"});
-        }
-
-        return base;
+    public CriadorPersonagem(RegistroPrototipos registro) {
+        this.registro = registro;
     }
 
+    // ------------------------------------------------------------------ API pública
+
+    /**
+     * Cria um novo Personagem.
+     * Se existir um protótipo registrado para raça+classe, clona-o e ajusta o nome.
+     * Caso contrário, constrói do zero usando Factory Method + Abstract Factory + Builder.
+     */
+    public Personagem criarPersonagem(String nome, String raca, String classe) {
+        String chave = chavePrototipo(raca, classe);
+
+        if (registro.contem(chave)) {
+            // Prototype: clona e personaliza
+            Personagem clone = registro.clonar(chave);
+            // O Builder não é necessário aqui pois o clone já está completo;
+            // ajustamos apenas o nome via setter público mínimo exposto pelo modelo.
+            return ajustarNome(clone, nome);
+        }
+
+        return construirDoZero(nome, raca, classe);
+    }
+
+    /**
+     * Registra um personagem já criado como protótipo reutilizável.
+     */
+    public void registrarPrototipo(String raca, String classe, Personagem personagem) {
+        registro.registrar(chavePrototipo(raca, classe), personagem);
+    }
+
+    // ------------------------------------------------------------------ internos
+
+    private Personagem construirDoZero(String nome, String raca, String classe) {
+        // Factory Method → devolve a Abstract Factory correta
+        FabricaEquipamentos fabrica = FabricaEquipamentosFactory.criar(raca, classe);
+
+        // Abstract Factory → cria família de equipamentos coesa
+        // Builder → monta o Personagem passo a passo
+        return new Personagem.Builder()
+                .nome(nome)
+                .raca(raca)
+                .classe(classe)
+                .forca(atributoForca(raca, classe))
+                .inteligencia(atributoInteligencia(raca, classe))
+                .agilidade(atributoAgilidade(raca, classe))
+                .vida(atributoVida(raca, classe))
+                .mana(atributoMana(raca, classe))
+                .arma(fabrica.criarArma())
+                .armadura(fabrica.criarArmadura())
+                .habilidades(fabrica.criarHabilidades())
+                .build();
+    }
+
+    /** Clona e redefine o nome (Personagem.Builder aceita somente construção completa). */
+    private Personagem ajustarNome(Personagem clone, String nome) {
+        // Usa o Builder a partir do clone para garantir imutabilidade controlada
+        return new Personagem.Builder()
+                .nome(nome)
+                .raca(clone.getRaca())
+                .classe(clone.getClasse())
+                .forca(clone.getForca())
+                .inteligencia(clone.getInteligencia())
+                .agilidade(clone.getAgilidade())
+                .vida(clone.getVida())
+                .mana(clone.getMana())
+                .arma(clone.getArma().clone())
+                .armadura(clone.getArmadura().clone())
+                .habilidades(clone.getHabilidades().clone())
+                .build();
+    }
+
+    private String chavePrototipo(String raca, String classe) {
+        return raca.toLowerCase() + "_" + classe.toLowerCase();
+    }
+
+    // ------------------------------------------------------------------ atributos base
+    // Singleton consultado: nível de dificuldade pode escalar os atributos no futuro.
+
+    private int atributoForca(String raca, String classe) {
+        int base = switch (raca.toLowerCase() + "_" + classe.toLowerCase()) {
+            case "humano_guerreiro" -> 15;
+            case "humano_mago"      -> 6;
+            case "humano_arqueiro"  -> 10;
+            case "elfo_guerreiro"   -> 12;
+            case "elfo_mago"        -> 4;
+            case "elfo_arqueiro"    -> 8;
+            case "orc_guerreiro"    -> 20;
+            case "orc_mago"         -> 10;
+            case "orc_arqueiro"     -> 14;
+            default -> throw new IllegalArgumentException("Raça/classe inválida");
+        };
+        return escalar(base);
+    }
+
+    private int atributoInteligencia(String raca, String classe) {
+        int base = switch (raca.toLowerCase() + "_" + classe.toLowerCase()) {
+            case "humano_guerreiro" -> 8;
+            case "humano_mago"      -> 18;
+            case "humano_arqueiro"  -> 12;
+            case "elfo_guerreiro"   -> 14;
+            case "elfo_mago"        -> 20;
+            case "elfo_arqueiro"    -> 16;
+            case "orc_guerreiro"    -> 6;
+            case "orc_mago"         -> 14;
+            case "orc_arqueiro"     -> 8;
+            default -> throw new IllegalArgumentException("Raça/classe inválida");
+        };
+        return escalar(base);
+    }
+
+    private int atributoAgilidade(String raca, String classe) {
+        int base = switch (raca.toLowerCase() + "_" + classe.toLowerCase()) {
+            case "humano_guerreiro" -> 10;
+            case "humano_mago"      -> 8;
+            case "humano_arqueiro"  -> 16;
+            case "elfo_guerreiro"   -> 16;
+            case "elfo_mago"        -> 14;
+            case "elfo_arqueiro"    -> 20;
+            case "orc_guerreiro"    -> 8;
+            case "orc_mago"         -> 6;
+            case "orc_arqueiro"     -> 12;
+            default -> throw new IllegalArgumentException("Raça/classe inválida");
+        };
+        return escalar(base);
+    }
+
+    private int atributoVida(String raca, String classe) {
+        int base = switch (raca.toLowerCase() + "_" + classe.toLowerCase()) {
+            case "humano_guerreiro" -> 120;
+            case "humano_mago"      -> 80;
+            case "humano_arqueiro"  -> 100;
+            case "elfo_guerreiro"   -> 100;
+            case "elfo_mago"        -> 70;
+            case "elfo_arqueiro"    -> 90;
+            case "orc_guerreiro"    -> 150;
+            case "orc_mago"         -> 100;
+            case "orc_arqueiro"     -> 120;
+            default -> throw new IllegalArgumentException("Raça/classe inválida");
+        };
+        return escalar(base);
+    }
+
+    private int atributoMana(String raca, String classe) {
+        int base = switch (raca.toLowerCase() + "_" + classe.toLowerCase()) {
+            case "humano_guerreiro" -> 30;
+            case "humano_mago"      -> 150;
+            case "humano_arqueiro"  -> 70;
+            case "elfo_guerreiro"   -> 60;
+            case "elfo_mago"        -> 180;
+            case "elfo_arqueiro"    -> 100;
+            case "orc_guerreiro"    -> 20;
+            case "orc_mago"         -> 120;
+            case "orc_arqueiro"     -> 40;
+            default -> throw new IllegalArgumentException("Raça/classe inválida");
+        };
+        return escalar(base);
+    }
+
+    /**
+     * Aplica escalonamento baseado no nível de dificuldade (Singleton).
+     * Nível 1 → sem modificador. Acima disso, inimigos ganham bônus.
+     */
+    private int escalar(int base) {
+        int nivel = ConfiguracaoJogo.getInstance().getNivelDificuldade();
+        return (nivel <= 1) ? base : (int) (base * (1 + (nivel - 1) * 0.1));
+    }
 }
